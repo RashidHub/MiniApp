@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Производство</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h2>Этапы производства</h2>
+
+<div id="menu">
+  <button onclick="selectStage('Конструктор')">Конструктор</button>
+  <button onclick="selectStage('Раскрой')">Раскрой</button>
+  <button onclick="selectStage('Пошив')">Пошив</button>
+  <button onclick="selectStage('Набивка')">Набивка</button>
+  <button onclick="selectStage('ОТК')">ОТК</button>
+  <button onclick="selectStage('Упаковка')">Упаковка</button>
+</div>
+
+<div id="constructor" style="display:none;">
+  <h3>Конструктор</h3>
+  <button onclick="startProduction()">Запуск в производство</button>
+</div>
+
+<div id="scanner" style="display:none;">
+  <div id="reader"></div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
