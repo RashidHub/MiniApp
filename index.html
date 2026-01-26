@@ -3,33 +3,106 @@
 <head>
   <meta charset="UTF-8">
   <title>Производство</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="https://unpkg.com/html5-qrcode"></script>
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 16px;
+    }
+    h2 {
+      text-align: center;
+    }
+    .stage {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      margin: 8px 0;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      background: #e0e0e0;
+    }
+    .stage.active {
+      background: #4caf50;
+      color: white;
+    }
+    #startBtn {
+      margin-top: 20px;
+      width: 100%;
+      padding: 16px;
+      font-size: 18px;
+      border: none;
+      border-radius: 6px;
+      background: #2196f3;
+      color: white;
+      display: none;
+    }
+  </style>
 </head>
 <body>
 
-<h2>Этапы производства</h2>
+<h2>Этап производства</h2>
 
-<div id="menu">
-  <button onclick="selectStage('Конструктор')">Конструктор</button>
-  <button onclick="selectStage('Раскрой')">Раскрой</button>
-  <button onclick="selectStage('Пошив')">Пошив</button>
-  <button onclick="selectStage('Набивка')">Набивка</button>
-  <button onclick="selectStage('ОТК')">ОТК</button>
-  <button onclick="selectStage('Упаковка')">Упаковка</button>
-</div>
+<button class="stage" onclick="selectStage(this)">Конструктор</button>
+<button class="stage" onclick="selectStage(this)">Раскрой</button>
+<button class="stage" onclick="selectStage(this)">Пошив</button>
+<button class="stage" onclick="selectStage(this)">Набивка</button>
+<button class="stage" onclick="selectStage(this)">ОТК</button>
+<button class="stage" onclick="selectStage(this)">Упаковка</button>
 
-<div id="constructor" style="display:none;">
-  <h3>Конструктор</h3>
-  <button onclick="startScan()">Запуск в производство</button>
-</div>
+<button id="startBtn" onclick="startScan()">▶ Запуск в производство</button>
 
-<div id="scanner" style="display:none;">
-  <div id="reader"></div>
-</div>
+<script>
+  const tg = Telegram.WebApp;
+  tg.expand();
 
-<script src="app.js"></script>
+  let selectedStage = null;
+
+  function selectStage(btn) {
+    document.querySelectorAll('.stage').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedStage = btn.innerText;
+    document.getElementById('startBtn').style.display = 'block';
+  }
+
+  function startScan() {
+    if (!selectedStage) {
+      alert("Выберите этап");
+      return;
+    }
+
+    tg.openScanQrPopup({
+      text: "Отсканируйте DataMatrix"
+    }, (result) => {
+      if (!result) return;
+
+      fetch("http://192.168.0.124:5001/scan", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          code: result,
+          stage: selectedStage,
+          user: tg.initDataUnsafe?.user?.id || null
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === "ok") {
+          alert("Записано в производство");
+        } else {
+          alert("Ошибка записи");
+        }
+      })
+      .catch(err => {
+        alert("Ошибка связи с сервером");
+        console.error(err);
+      });
+    });
+  }
+</script>
+
 </body>
 </html>
