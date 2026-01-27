@@ -1,64 +1,10 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8">
-  <title>Производство</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      padding: 16px;
-    }
-    h2 {
-      text-align: center;
-    }
-    .stage {
-      display: block;
-      width: 100%;
-      padding: 14px;
-      margin: 8px 0;
-      font-size: 16px;
-      border: none;
-      border-radius: 6px;
-      background: #e0e0e0;
-    }
-    .stage.active {
-      background: #4caf50;
-      color: white;
-    }
-    #startBtn {
-      margin-top: 20px;
-      width: 100%;
-      padding: 16px;
-      font-size: 18px;
-      border: none;
-      border-radius: 6px;
-      background: #2196f3;
-      color: white;
-      display: none;
-    }
-  </style>
-</head>
-<body>
-
-<h2>Этап производства</h2>
-
-<button class="stage" onclick="selectStage(this)">Конструктор</button>
-<button class="stage" onclick="selectStage(this)">Раскрой</button>
-<button class="stage" onclick="selectStage(this)">Пошив</button>
-<button class="stage" onclick="selectStage(this)">Набивка</button>
-<button class="stage" onclick="selectStage(this)">ОТК</button>
-<button class="stage" onclick="selectStage(this)">Упаковка</button>
-
-<button id="startBtn" onclick="startScan()">▶ Запуск в производство</button>
-
 <script>
   const tg = Telegram.WebApp;
   tg.expand();
 
   let selectedStage = null;
 
+  // Выбор этапа
   function selectStage(btn) {
     document.querySelectorAll('.stage').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
@@ -66,43 +12,52 @@
     document.getElementById('startBtn').style.display = 'block';
   }
 
+  // Запуск сканирования
   function startScan() {
     if (!selectedStage) {
-      alert("Выберите этап");
+      alert("Выберите этап!");
       return;
     }
 
+    // Открываем встроенный сканер Telegram
     tg.openScanQrPopup({
       text: "Отсканируйте DataMatrix"
-    }, (result) => {
-      if (!result) return;
+    }, async (result) => {
+      if (!result) {
+        alert("Сканирование отменено");
+        return;
+      }
 
-      fetch("http://192.168.0.124:5001/scan", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          code: result,
-          stage: selectedStage,
-          user: tg.initDataUnsafe?.user?.id || null
-        })
-      })
-      .then(res => res.json())
-      .then(data => {
+      // Для отладки: точно видим, что считалось
+      console.log("Сканировано:", result);
+
+      try {
+        // Отправка POST на сервер
+        const response = await fetch("https://office.korda.spb.ru/scan", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            code: result,
+            stage: selectedStage,
+            user: tg.initDataUnsafe?.user?.id || null
+          })
+        });
+
+        // Получаем JSON
+        const data = await response.json();
+
         if (data.status === "ok") {
-          alert("Записано в производство");
+          alert(`Изделие ${result} успешно запущено в производство на этапе ${selectedStage}`);
         } else {
-          alert("Ошибка записи");
+          alert("Ошибка записи на сервере");
         }
-      })
-      .catch(err => {
-        alert("Ошибка связи с сервером");
+
+      } catch (err) {
         console.error(err);
-      });
+        alert("Не удалось соединиться с сервером. Проверьте сеть и адрес сервера.");
+      }
     });
   }
 </script>
-
-</body>
-</html>
