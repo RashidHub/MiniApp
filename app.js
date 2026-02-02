@@ -15,17 +15,30 @@ function selectStage(stage) {
 }
 
 function startProduction() {
+  alert("Кнопка нажата");
+
   document.getElementById("constructor").style.display = "none";
   document.getElementById("scanner").style.display = "block";
+
+  console.log("Пытаемся открыть камеру");
 
   scanner = new Html5Qrcode("reader");
 
   scanner.start(
     { facingMode: "environment" },
     { fps: 10, qrbox: 250 },
-    onScanSuccess
-  );
+    (text) => {
+      alert("Отсканировано: " + text);
+      scanner.stop();
+    },
+    (err) => {
+      console.log("scan error", err);
+    }
+  ).catch(err => {
+    alert("Ошибка запуска камеры: " + err);
+  });
 }
+
 
 function onScanSuccess(decodedText) {
   scanner.stop();
