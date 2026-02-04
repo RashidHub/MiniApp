@@ -1,70 +1,60 @@
-let currentStage = null;
-let scanner = null;
-
 const tg = window.Telegram.WebApp;
 tg.ready();
+tg.expand();
 
+let currentStage = null;
+
+// Выбор этапа
 function selectStage(stage) {
   currentStage = stage;
 
   document.getElementById("menu").style.display = "none";
-
-  if (stage === "Конструктор") {
-    document.getElementById("constructor").style.display = "block";
-  }
+  document.getElementById("constructor").style.display = "block";
 }
 
+// Запуск производства
 function startProduction() {
-  alert("Кнопка нажата");
+  if (!currentStage) {
+    alert("Выберите этап");
+    return;
+  }
 
-  document.getElementById("constructor").style.display = "none";
-  document.getElementById("scanner").style.display = "block";
+  tg.openScanQrPopup(
+    { text: "Отсканируйте DataMatrix" },
+    async (result) => {
+      if (!result) {
+        alert("Сканирование отменено");
+        return;
+      }
 
-  console.log("Пытаемся открыть камеру");
+      try {
+        const response = await fetch(
+          "https://production.korda.spb.ru/scan",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              code: result,
+              stage: currentStage,
+              user: tg.initDataUnsafe?.user?.id || null
+            })
+          }
+        );
 
-  scanner = new Html5Qrcode("reader");
+        const data = await response.json();
 
-  scanner.start(
-    { facingMode: "environment" },
-    { fps: 10, qrbox: 250 },
-    (text) => {
-      alert("Отсканировано: " + text);
-      scanner.stop();
-    },
-    (err) => {
-      console.log("scan error", err);
+        if (data.status === "ok") {
+          alert("✅ Изделие запущено в производство");
+        } else {
+          alert("❌ Ошибка сервера");
+        }
+
+      } catch (err) {
+        console.error(err);
+        alert("❌ Не удалось отправить данные");
+      }
     }
-  ).catch(err => {
-    alert("Ошибка запуска камеры: " + err);
-  });
-}
-
-
-function onScanSuccess(decodedText) {
-  scanner.stop();
-  document.getElementById("scanner").style.display = "none";
-
-  sendToServer(decodedText);
-}
-
-function sendToServer(code) {
-  fetch("https://office.korda.spb.ru/scan", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      code: code,
-      stage: currentStage,
-      user: tg.initDataUnsafe?.user?.id || null
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    alert("✅ Изделие запущено в производство");
-  })
-  .catch(err => {
-    alert("❌ Ошибка отправки");
-    console.error(err);
-  });
+  );
 }
