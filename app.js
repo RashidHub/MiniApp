@@ -50,7 +50,7 @@ function sendToServer(code) {
     user: tg.initDataUnsafe?.user?.id || null
   });
 
-  fetch("https://office.korda.spb.ru/scan", {
+  fetch("https://production.korda.spb.ru/scan", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
