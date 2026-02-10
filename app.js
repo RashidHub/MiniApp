@@ -1,17 +1,9 @@
-const tg = window.Telegram.WebApp;
-tg.ready();
-tg.expand();
-
-let currentStage = null;
-
-// выбор этапа
-function selectStage(stage) {
+window.selectStage = function(stage) {
   currentStage = stage;
   alert("Выбран этап: " + stage);
-}
+};
 
-// запуск сканирования
-function startScan() {
+window.startScan = function() {
   if (!currentStage) {
     alert("Сначала выберите этап");
     return;
@@ -30,9 +22,7 @@ function startScan() {
       try {
         const response = await fetch("http://192.168.0.249:5001/scan", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             code: result,
             stage: currentStage,
@@ -54,4 +44,4 @@ function startScan() {
       }
     }
   );
-}
+};
