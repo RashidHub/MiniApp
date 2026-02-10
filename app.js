@@ -4,6 +4,9 @@ let scanner = null;
 const tg = window.Telegram.WebApp;
 tg.ready();
 
+// URL сервера
+const SERVER_URL = "https://production.korda.spb.ru/scan";
+
 function selectStage(stage) {
   currentStage = stage;
 
@@ -15,25 +18,24 @@ function selectStage(stage) {
   }
 }
 
+// Запуск производства и сканера
 function startProduction() {
-  alert("Кнопка нажата");
-
-  // Скрываем конструктора и показываем сканер
   document.getElementById("constructor").style.display = "none";
   document.getElementById("scanner").style.display = "block";
 
   console.log("Пытаемся открыть камеру");
 
-  // Инициализация сканера
   scanner = new Html5Qrcode("reader");
 
-  // Настройки сканера
   scanner.start(
     { facingMode: "environment" }, // Камера заднего плана
-    { fps: 10, qrbox: 250 }, // Параметры сканера
+    { fps: 10, qrbox: 250 },       // Параметры сканера
     (text) => {
-      alert("Отсканировано: " + text);
-      scanner.stop(); // Останавливаем сканирование после получения текста
+      // Останавливаем сканер и отправляем данные на сервер
+      scanner.stop().then(() => {
+        alert("Отсканировано: " + text);
+        sendToServer(text);
+      });
     },
     (err) => {
       console.log("Ошибка сканирования", err);
@@ -43,18 +45,11 @@ function startProduction() {
   });
 }
 
+// Отправка данных на сервер
 function sendToServer(code) {
-  console.log("Отправка данных на сервер:", {
-    code: code,
-    stage: currentStage,
-    user: tg.initDataUnsafe?.user?.id || null
-  });
-
-  fetch("https://production.korda.spb.ru/scan", {
+  fetch(SERVER_URL, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       code: code,
       stage: currentStage,
@@ -64,6 +59,7 @@ function sendToServer(code) {
   .then(res => res.json())
   .then(data => {
     alert("✅ Изделие запущено в производство");
+    returnToMenu();
   })
   .catch(err => {
     alert("❌ Ошибка отправки");
@@ -71,25 +67,13 @@ function sendToServer(code) {
   });
 }
 
-// Функция для отправки данных на сервер
-function sendToServer(code) {
-  fetch("https://production.korda.spb.ru/scan", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      code: code,
-      stage: currentStage,
-      user: tg.initDataUnsafe?.user?.id || null
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    alert("✅ Изделие запущено в производство");
-  })
-  .catch(err => {
-    alert("❌ Ошибка отправки");
-    console.error(err);
-  });
+// Возврат в главное меню
+function returnToMenu() {
+  if(scanner) {
+    scanner.stop().catch(() => {});
+    scanner = null;
+  }
+  document.getElementById("scanner").style.display = "none";
+  document.getElementById("constructor").style.display = "none";
+  document.getElementById("menu").style.display = "block";
 }
