@@ -43,6 +43,34 @@ function startProduction() {
   });
 }
 
+function sendToServer(code) {
+  console.log("Отправка данных на сервер:", {
+    code: code,
+    stage: currentStage,
+    user: tg.initDataUnsafe?.user?.id || null
+  });
+
+  fetch("https://office.korda.spb.ru/scan", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      code: code,
+      stage: currentStage,
+      user: tg.initDataUnsafe?.user?.id || null
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert("✅ Изделие запущено в производство");
+  })
+  .catch(err => {
+    alert("❌ Ошибка отправки");
+    console.error(err);
+  });
+}
+
 // Функция для отправки данных на сервер
 function sendToServer(code) {
   fetch("https://production.korda.spb.ru/scan", {
