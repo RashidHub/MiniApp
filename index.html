@@ -1,21 +1,22 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>TEST</title>
+  <title>Производство</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
 
-<button onclick="test()">НАЖМИ МЕНЯ</button>
+<h3>Выберите этап</h3>
 
-<script>
-  alert("JS работает");
+<button onclick="selectStage('Конструктор')">Конструктор</button>
+<button onclick="selectStage('Раскрой')">Раскрой</button>
+<button onclick="selectStage('Пошив')">Пошив</button>
 
-  function test() {
-    alert("КНОПКА НАЖАТА");
-  }
-</script>
+<br><br>
 
+<button onclick="startScan()">Сканировать</button>
+
+<script src="app.js"></script>
 </body>
 </html>

@@ -2,64 +2,55 @@ const tg = window.Telegram.WebApp;
 tg.ready();
 tg.expand();
 
-let selectedStage = null;
+let currentStage = null;
 
 // выбор этапа
-function selectStage(btn) {
-  document.querySelectorAll('.stage')
-    .forEach(b => b.classList.remove('active'));
-
-  btn.classList.add('active');
-  selectedStage = btn.innerText;
-
-  document.getElementById('scanBtn').classList.remove('hidden');
+function selectStage(stage) {
+  currentStage = stage;
+  alert("Выбран этап: " + stage);
 }
 
-// запуск сканера
+// запуск сканирования
 function startScan() {
-  if (!selectedStage) {
-    alert("Выберите этап");
+  if (!currentStage) {
+    alert("Сначала выберите этап");
     return;
   }
 
   tg.openScanQrPopup(
-    { text: "Отсканируйте DataMatrix / QR" },
+    { text: "Отсканируйте код изделия" },
     async (result) => {
-
       if (!result) {
         alert("Сканирование отменено");
         return;
       }
 
-      console.log("Сканировано:", result);
+      alert("Отсканировано: " + result);
 
       try {
-        const response = await fetch(
-          "https://production.korda.spb.ru/scan",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              code: result,
-              stage: selectedStage,
-              user: tg.initDataUnsafe?.user?.id || null
-            })
-          }
-        );
+        const response = await fetch("https://production.korda.spb.ru/scan", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            code: result,
+            stage: currentStage,
+            user: tg.initDataUnsafe?.user?.id || null
+          })
+        });
 
         const data = await response.json();
 
         if (data.status === "ok") {
-          alert("✅ Записано в производство");
+          alert("✅ Записано в базу");
         } else {
           alert("❌ Ошибка сервера");
         }
 
-      } catch (err) {
-        console.error(err);
-        alert("❌ Ошибка отправки данных");
+      } catch (e) {
+        console.error(e);
+        alert("❌ Ошибка отправки");
       }
     }
   );
