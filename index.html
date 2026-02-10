@@ -1,48 +1,21 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
   <meta charset="UTF-8">
-  <title>Производство</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Telegram SDK -->
+  <title>TEST</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-    }
-    button {
-      width: 100%;
-      padding: 15px;
-      margin: 5px 0;
-      font-size: 18px;
-    }
-    .hidden {
-      display: none;
-    }
-    .active {
-      background: #4caf50;
-      color: #fff;
-    }
-  </style>
 </head>
 <body>
 
-<h2>Этап производства</h2>
+<button onclick="test()">НАЖМИ МЕНЯ</button>
 
-<div id="stages">
-  <button class="stage" onclick="selectStage(this)">Конструктор</button>
-  <button class="stage" onclick="selectStage(this)">Раскрой</button>
-  <button class="stage" onclick="selectStage(this)">Пошив</button>
-  <button class="stage" onclick="selectStage(this)">Набивка</button>
-  <button class="stage" onclick="selectStage(this)">ОТК</button>
-  <button class="stage" onclick="selectStage(this)">Упаковка</button>
-</div>
+<script>
+  alert("JS работает");
 
-<button id="scanBtn" class="hidden" onclick="startScan()">Сканировать</button>
+  function test() {
+    alert("КНОПКА НАЖАТА");
+  }
+</script>
 
-<script src="app.js"></script>
 </body>
 </html>
