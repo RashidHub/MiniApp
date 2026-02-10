@@ -1,39 +1,66 @@
-scanner.start(
-  { facingMode: "environment" },
-  { fps: 10, qrbox: 250 },
-  (text) => {
-    scanner.stop().then(() => {
-      sendToServer(text);
-    }).catch(err => console.log("Ошибка остановки сканера", err));
-  },
-  (err) => {
-    console.log("Ошибка сканирования", err);
-  }
-).catch(err => {
-  alert("Ошибка запуска камеры: " + err);
-});
+const tg = window.Telegram.WebApp;
+tg.ready();
+tg.expand();
 
-function sendToServer(code) {
-  fetch(SERVER_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      code: code,
-      stage: currentStage,
-      user: tg.initDataUnsafe?.user?.id || null
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if(data.status === "ok") {
-      alert("✅ Изделие запущено в производство");
-    } else {
-      alert("❌ Ошибка: " + (data.error || "Неизвестная ошибка"));
+let selectedStage = null;
+
+// выбор этапа
+function selectStage(btn) {
+  document.querySelectorAll('.stage')
+    .forEach(b => b.classList.remove('active'));
+
+  btn.classList.add('active');
+  selectedStage = btn.innerText;
+
+  document.getElementById('scanBtn').classList.remove('hidden');
+}
+
+// запуск сканера
+function startScan() {
+  if (!selectedStage) {
+    alert("Выберите этап");
+    return;
+  }
+
+  tg.openScanQrPopup(
+    { text: "Отсканируйте DataMatrix / QR" },
+    async (result) => {
+
+      if (!result) {
+        alert("Сканирование отменено");
+        return;
+      }
+
+      console.log("Сканировано:", result);
+
+      try {
+        const response = await fetch(
+          "https://production.korda.spb.ru/scan",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              code: result,
+              stage: selectedStage,
+              user: tg.initDataUnsafe?.user?.id || null
+            })
+          }
+        );
+
+        const data = await response.json();
+
+        if (data.status === "ok") {
+          alert("✅ Записано в производство");
+        } else {
+          alert("❌ Ошибка сервера");
+        }
+
+      } catch (err) {
+        console.error(err);
+        alert("❌ Ошибка отправки данных");
+      }
     }
-    returnToMenu();
-  })
-  .catch(err => {
-    alert("❌ Ошибка отправки");
-    console.error(err);
-  });
+  );
 }
