@@ -28,7 +28,7 @@ function startScan() {
       alert("Отсканировано: " + result);
 
       try {
-        const response = await fetch("https://production.korda.spb.ru/scan", {
+        const response = await fetch("http://192.168.0.249:5001/scan", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
