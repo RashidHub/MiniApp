@@ -1,4 +1,11 @@
 <button onclick="selectStage('Конструктор')">Конструктор</button>
+<button onclick="selectStage('Раскрой')">Раскрой</button>
+<button onclick="selectStage('Пошив')">Пошив</button>
+<button onclick="selectStage('Набивка')">Набивка</button>
+<button onclick="selectStage('ОТК')">ОТК</button>
+<button onclick="selectStage('Упаковка')">Упаковка</button>
 
-<button onclick="startProduction()">Запуск в производство</button>
-<script src="app.js"></script>
+<div id="constructor" style="display:none;">
+    <h3>Конструктор</h3>
+    <button onclick="startProduction()">Запуск в производство</button>
+</div>

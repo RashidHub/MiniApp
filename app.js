@@ -4,13 +4,15 @@ tg.expand();
 
 let currentStage = null;
 
-// Выбор этапа
 function selectStage(stage) {
-  currentStage = stage;
+    currentStage = stage;
+    document.getElementById("menu").style.display = "none"; // Скрываем меню
 
-  document.getElementById("menu").style.display = "none";
-  document.getElementById("constructor").style.display = "block";
+    if (stage === "Конструктор") {
+        document.getElementById("constructor").style.display = "block"; // Показываем раздел для конструктора
+    }
 }
+
 
 // Запуск производства
 function startProduction() {
