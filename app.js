@@ -19,6 +19,7 @@ window.startScan = function() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            qr_data: result,
             code: result,
             stage: currentStage,
             user: tg.initDataUnsafe?.user?.id || null
