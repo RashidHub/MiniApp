@@ -1,8 +1,3 @@
-window.selectStage = function(stage) {
-  currentStage = stage;
-  alert("Выбран этап: " + stage);
-};
-
 window.startScan = function() {
   if (!currentStage) {
     alert("Сначала выберите этап");
@@ -20,7 +15,7 @@ window.startScan = function() {
       alert("Отсканировано: " + result);
 
       try {
-        const response = await fetch("http://192.168.0.249:5001/scan", {
+        const response = await fetch("/scan", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -32,7 +27,7 @@ window.startScan = function() {
 
         const data = await response.json();
 
-        if (data.status === "ok") {
+        if (data.status === "ok" || data.status === "success") {
           alert("✅ Записано в базу");
         } else {
           alert("❌ Ошибка сервера");
