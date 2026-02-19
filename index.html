@@ -1,22 +1,85 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Производство</title>
+  <meta charset="UTF-8" />
+  <title>Mini App</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    button {
+      padding: 12px;
+      margin: 6px;
+      font-size: 16px;
+    }
+  </style>
 </head>
 <body>
 
-<h3>Выберите этап</h3>
+<h2>Этап производства</h2>
 
-<button onclick="selectStage('stage_1')">Этап 1</button>
-<button onclick="selectStage('stage_2')">Этап 2</button>
+<button onclick="selectStage('cut')">Раскрой</button>
+<button onclick="selectStage('sew')">Пошив</button>
+<button onclick="selectStage('pack')">Набивка</button>
 
 <br><br>
 
-<button onclick="startScan()">Сканировать</button>
+<button onclick="startScan()">📷 Сканировать</button>
 
+<div id="status" style="margin-top:20px;font-weight:bold;"></div>
 
-<script src="app.js"></script>
+<script>
+  const tg = window.Telegram.WebApp;
+  tg.ready();
+
+  let currentStage = null;
+
+  window.selectStage = function(stage) {
+    currentStage = stage;
+    document.getElementById("status").innerText =
+      "Выбран этап: " + stage;
+  };
+
+  window.startScan = function() {
+    if (!currentStage) {
+      tg.showPopup({
+        title: "Ошибка",
+        message: "Сначала выберите этап",
+        buttons: [{ type: "ok" }]
+      });
+      return;
+    }
+
+    tg.openScanQrPopup(
+      { text: "Отсканируйте код изделия" },
+      async (result) => {
+        if (!result) return;
+
+        document.getElementById("status").innerText =
+          "Сканировано: " + result;
+
+        const response = await fetch(
+          "https://production.korda.spb.ru/scan",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              qr_data: result,
+              stage: currentStage,
+              user: tg.initDataUnsafe?.user?.id || null
+            })
+          }
+        );
+
+        const data = await response.json();
+
+        tg.showPopup({
+          title: data.status === "success" ? "OK" : "Ошибка",
+          message: JSON.stringify(data),
+          buttons: [{ type: "ok" }]
+        });
+      }
+    );
+  };
+</script>
+
 </body>
 </html>
